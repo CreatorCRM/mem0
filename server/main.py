@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 load_dotenv()
 
 
+VECTOR_STORE_PROVIDER = os.environ.get("VECTOR_STORE_PROVIDER", "pgvector")
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "postgres")
 POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
 POSTGRES_DB = os.environ.get("POSTGRES_DB", "postgres")
@@ -22,9 +23,16 @@ POSTGRES_USER = os.environ.get("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "postgres")
 POSTGRES_COLLECTION_NAME = os.environ.get("POSTGRES_COLLECTION_NAME", "memories")
 
-NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://neo4j:7687")
-NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
-NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD", "mem0graph")
+MILVUS_URL = os.environ.get("MILVUS_URL")
+MILVUS_TOKEN = os.environ.get("MILVUS_TOKEN")
+MILVUS_COLLECTION_NAME = os.environ.get("MILVUS_COLLECTION_NAME", "memories")
+MILVUS_EMBEDDING_MODEL_DIMS = os.environ.get("MILVUS_EMBEDDING_MODEL_DIMS")
+MILVUS_METRIC_TYPE = os.environ.get("MILVUS_METRIC_TYPE", "COSINE")
+
+
+NEO4J_URI = os.environ.get("NEO4J_URI")
+NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME")
+NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD")
 
 MEMGRAPH_URI = os.environ.get("MEMGRAPH_URI", "bolt://localhost:7687")
 MEMGRAPH_USERNAME = os.environ.get("MEMGRAPH_USERNAME", "memgraph")
@@ -33,28 +41,46 @@ MEMGRAPH_PASSWORD = os.environ.get("MEMGRAPH_PASSWORD", "mem0graph")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 HISTORY_DB_PATH = os.environ.get("HISTORY_DB_PATH", "/app/history/history.db")
 
+VECTOR_STORE_CONFIG = {
+    "provider": VECTOR_STORE_PROVIDER,
+}
+
+if VECTOR_STORE_PROVIDER == "pgvector":
+    VECTOR_STORE_CONFIG["config"] = {
+        "host": POSTGRES_HOST,
+        "port": int(POSTGRES_PORT),
+        "dbname": POSTGRES_DB,
+        "user": POSTGRES_USER,
+        "password": POSTGRES_PASSWORD,
+        "collection_name": POSTGRES_COLLECTION_NAME,
+    }
+elif VECTOR_STORE_PROVIDER == "milvus":
+    if not all([MILVUS_URL, MILVUS_TOKEN, MILVUS_COLLECTION_NAME, MILVUS_EMBEDDING_MODEL_DIMS]):
+        raise ValueError("MILVUS_URL, MILVUS_TOKEN, MILVUS_COLLECTION_NAME, and MILVUS_EMBEDDING_MODEL_DIMS must be set when using Milvus as vector store.")
+    VECTOR_STORE_CONFIG["config"] = {
+        "url": MILVUS_URL,
+        "token": MILVUS_TOKEN,
+        "collection_name": MILVUS_COLLECTION_NAME,
+        "embedding_model_dims": int(MILVUS_EMBEDDING_MODEL_DIMS),
+        "metric_type": MILVUS_METRIC_TYPE,
+    }
+else:
+    raise ValueError(f"Unsupported vector store provider: {VECTOR_STORE_PROVIDER}")
+
 DEFAULT_CONFIG = {
     "version": "v1.1",
-    "vector_store": {
-        "provider": "pgvector",
-        "config": {
-            "host": POSTGRES_HOST,
-            "port": int(POSTGRES_PORT),
-            "dbname": POSTGRES_DB,
-            "user": POSTGRES_USER,
-            "password": POSTGRES_PASSWORD,
-            "collection_name": POSTGRES_COLLECTION_NAME,
-        },
-    },
-    "graph_store": {
-        "provider": "neo4j",
-        "config": {"url": NEO4J_URI, "username": NEO4J_USERNAME, "password": NEO4J_PASSWORD},
-    },
+    "vector_store": VECTOR_STORE_CONFIG,
     "llm": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "temperature": 0.2, "model": "gpt-4o"}},
     "embedder": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "model": "text-embedding-3-small"}},
     "history_db_path": HISTORY_DB_PATH,
 }
 
+# Add graph store configuration only if Neo4j environment variables are set
+if all([NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD]):
+    DEFAULT_CONFIG["graph_store"] = {
+        "provider": "neo4j",
+        "config": {"url": NEO4J_URI, "username": NEO4J_USERNAME, "password": NEO4J_PASSWORD},
+    }
 
 MEMORY_INSTANCE = Memory.from_config(DEFAULT_CONFIG)
 
