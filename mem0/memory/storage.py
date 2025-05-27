@@ -154,3 +154,37 @@ class SQLiteManager:
 
     def __del__(self):
         self.close()
+
+
+class NoOpHistoryManager:
+    """A history manager that does nothing - effectively disables history tracking."""
+    
+    def __init__(self, db_path: str = ":memory:"):
+        pass
+
+    def add_history(
+        self,
+        memory_id: str,
+        old_memory: Optional[str],
+        new_memory: Optional[str],
+        event: str,
+        *,
+        created_at: Optional[str] = None,
+        updated_at: Optional[str] = None,
+        is_deleted: int = 0,
+        actor_id: Optional[str] = None,
+        role: Optional[str] = None,
+    ) -> None:
+        pass
+
+    def get_history(self, memory_id: str) -> List[Dict[str, Any]]:
+        return []
+
+    def reset(self) -> None:
+        pass
+
+    def close(self) -> None:
+        pass
+
+    def __del__(self):
+        pass

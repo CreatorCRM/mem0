@@ -39,9 +39,9 @@ class MemoryConfig(BaseModel):
         description="Configuration for the embedding model",
         default_factory=EmbedderConfig,
     )
-    history_db_path: str = Field(
+    history_db_path: Optional[str] = Field(
         description="Path to the history database",
-        default=os.path.join(mem0_dir, "history.db"),
+        default=None,
     )
     graph_store: GraphStoreConfig = Field(
         description="Configuration for the graph",
