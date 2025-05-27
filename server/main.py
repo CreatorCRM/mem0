@@ -72,7 +72,7 @@ DEFAULT_CONFIG = {
     "vector_store": VECTOR_STORE_CONFIG,
     "llm": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "temperature": 0.2, "model": "gpt-4o"}},
     "embedder": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "model": "text-embedding-3-small"}},
-    "history_db_path": HISTORY_DB_PATH if HISTORY_DB_PATH != "" else None,
+    "history_db_path": HISTORY_DB_PATH if HISTORY_DB_PATH and HISTORY_DB_PATH != "" else None,
 }
 
 # Add graph store configuration only if Neo4j environment variables are set
