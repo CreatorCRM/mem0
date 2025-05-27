@@ -39,7 +39,7 @@ MEMGRAPH_USERNAME = os.environ.get("MEMGRAPH_USERNAME", "memgraph")
 MEMGRAPH_PASSWORD = os.environ.get("MEMGRAPH_PASSWORD", "mem0graph")
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-HISTORY_DB_PATH = os.environ.get("HISTORY_DB_PATH", "/app/history/history.db")
+HISTORY_DB_PATH = os.environ.get("HISTORY_DB_PATH")
 
 VECTOR_STORE_CONFIG = {
     "provider": VECTOR_STORE_PROVIDER,
@@ -72,7 +72,7 @@ DEFAULT_CONFIG = {
     "vector_store": VECTOR_STORE_CONFIG,
     "llm": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "temperature": 0.2, "model": "gpt-4o"}},
     "embedder": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "model": "text-embedding-3-small"}},
-    "history_db_path": HISTORY_DB_PATH,
+    "history_db_path": HISTORY_DB_PATH if HISTORY_DB_PATH != "" else None,
 }
 
 # Add graph store configuration only if Neo4j environment variables are set
