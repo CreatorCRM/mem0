@@ -34,10 +34,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Build the image using server/Dockerfile
-          # Change directory to server/ to match the Dockerfile's expectations
-          # or adjust the build context if using a different Dockerfile
-          cd server
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          # Build the image using server/dev.Dockerfile from the root context
+          docker build -f server/dev.Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
